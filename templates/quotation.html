@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Dashboard</title>
+{% endblock title %}
+{% block main %}
+
+<!-- Room availability table -->
+<h1>Quotation List</h1>
+
+
+<div class="navbar-left">
+
+    <a class="test"   data-bs-toggle="modal" data-bs-target="#AddholidaymasterModal" href="{% url 'employee:create_quotation' %}">Create Quotation
+    </a>
+
+</div> 
+
+<table>
+        <thead>
+            <tr>
+                <th>Client Name</th>
+                <th>Room</th>
+                <th>Sheets Requested</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Discount (%)</th>
+                <th>IGST (9%)</th>
+                <th>SGST (9%)</th>
+                <th>Final Price</th>
+                <th>Created At</th>
+                <th>remarks</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in quotations %}
+            <tr>
+                <td>{{ i.client_name }}</td>
+                <td>{{ i.room.name }} ({{ i.room.room_type }})</td>
+                <td>{{ i.sheets_requested }}</td>
+                <td>{{ i.start_date }}</td>
+                <td>{{ i.end_date }}</td>
+                <td>{{ i.discount }}%</td>
+                <td>₹{{ i.igst }}</td>
+                <td>₹{{ i.sgst }}</td>
+                <td>₹{{ i.final_price }}</td>
+                <td>{{ i.created_at }}</td>
+                <td>{{ i.remarks }}</td>
+                <td>
+                
+                    <div class="d-flex justify-content-center">
+                    
+                    <a href="{% url 'employee:update_quotation' i.id %}" class="test">Update</a>
+                    <a href="{% url 'employee:delete_quotation' i.id %}" class="test delete-room">Delete</a>
+                </div>
+            </td>
+            </tr>
+         
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock main %}

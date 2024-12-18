@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}
+
+<title>Available Rooms Report</title>
+
+{% endblock title %}
+
+{% block main %}
+
+   
+    <h1>Available Rooms Report</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Room Name</th>
+                <th>Room Type</th>
+                <th>Total Sheets</th>
+                <th>Available Sheets</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room_info in page_obj %}
+            <tr>
+                <td>{{ room_info.room.name }}</td>  <!-- Access the room's name -->
+                <td>{{ room_info.room.room_type }}</td>  <!-- Access the room's type -->
+                <td>{{ room_info.room.sheet_count }}</td>  <!-- Access the total sheets -->
+                <td>{{ room_info.available_sheets }}</td>  <!-- Access the available sheets -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% include 'reports/pagination.html' %}
+    {% endblock main %}

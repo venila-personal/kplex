@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+
+
+<title>Quotation Report</title>
+
+{% endblock title %}
+
+{% block main %}
+
+    <h1>Quotation Report</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Client Name</th>
+                <th>Room</th>
+                <th>Sheets Requested</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Discount (%)</th>
+                <th>IGST (9%)</th>
+                <th>SGST (9%)</th>
+                <th>Final Price</th>
+                <th>Created At</th>
+                <th>remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in page_obj.object_list %}
+            <tr>
+                <td>{{ q.client_name }}</td>
+                <td>{{ q.room.name }} ({{ q.room.room_type }})</td>
+                <td>{{ q.sheets_requested }}</td>
+                <td>{{ q.start_date }}</td>
+                <td>{{ q.end_date }}</td>
+                <td>{{ q.discount }}%</td>
+                <td>₹{{ q.igst }}</td>
+                <td>₹{{ q.sgst }}</td>
+                <td>₹{{ q.final_price }}</td>
+                <td>{{ q.created_at }}</td>
+                <td>{{ q.remarks }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10">No quotations found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% include 'reports/pagination.html' %}
+    {% endblock main %}
