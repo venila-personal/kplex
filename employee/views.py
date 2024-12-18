@@ -29,12 +29,19 @@ def dashboard(request):
 
     # Fetch all rooms
     rooms = Room.objects.all()
+    total_office=Room.objects.filter(room_type='Office')
+    # Fetch only rooms with room_type 'Office'
+    office_rooms = Room.objects.filter(room_type='Office')
+    total_office_rooms = office_rooms.count()
 
-    total_rooms = rooms.count()
+    total_rooms = total_office.count()
     total_available_sheets = 0
-    total_clients_active = Booking.objects.filter(status='ACTIVE').values('client_name').distinct().count()
+    total_clients_active = Booking.objects.filter(status='ACTIVE', room__room_type='Office').values('client_name').distinct().count()
     total_clients = Booking.objects.values('client_name').distinct().count()
     total_pending_quotations = Quotation.objects.filter(status='Pending').count()
+
+    # Variable to hold total available sheets for office rooms
+    available_office_rooms = 0
 
     for room in rooms:
         active_bookings = Booking.objects.filter(room=room, status='ACTIVE')
@@ -43,6 +50,10 @@ def dashboard(request):
         booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
         available_sheets = room.sheet_count - booked_sheets
         total_available_sheets += available_sheets
+
+        # If room is of type 'Office', add available sheets to available_office_rooms
+        if room.room_type == 'Office':
+            available_office_rooms += available_sheets
 
         # Append room data to the list
         rooms_with_availability.append({
@@ -60,6 +71,7 @@ def dashboard(request):
         'total_clients_active': total_clients_active,
         'total_clients': total_clients,
         'total_pending_quotations': total_pending_quotations,
+        'available_office_rooms': available_office_rooms  # Total available sheets for office rooms
     }
 
     return render(request, 'dashboard.html', context)
@@ -174,26 +186,34 @@ def book_room(request):
         # Fetch the room and check availability
         room = get_object_or_404(Room, id=room_id)
 
+         # Calculate available sheets based on active bookings
+        active_bookings = Booking.objects.filter(room=room, status='ACTIVE')
+        booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
+        available_sheets = room.sheet_count - booked_sheets
+
+
+
         # If room type is not "Office", don't calculate based on sheets, just store the price
         if room.room_type != "Office":
             total_price = room.price  # Direct price without calculation based on sheets
         else:
             # For "Office" type, calculate price based on sheets requested
-            existing_bookings = Booking.objects.filter(
-                room=room,
-                end_date__gte=start_date,  # Overlapping bookings
-                start_date__lte=end_date,
-            )
-
-            total_sheets_booked = sum([booking.sheets_booked for booking in existing_bookings])
-            available_sheets = room.sheet_count - total_sheets_booked
-
+            
             if sheets_requested > available_sheets:
                 messages.error(request, "Not enough sheets available for the selected dates.")
-                return redirect('employee:book_room')
+                return render(request, 'create_quotation.html', {
+                    'rooms': Room.objects.all(),
+                    'selected_room': room,
+                    'room_type': room.room_type,
+                    'price': room.price or room.price_per_sheet,
+                    'error_sheets_requested': True,  # Pass error flag
+                    'available_sheets': available_sheets,  # Ensure this reflects the correct value
+                    'request_data': request.POST, 
+                })
 
             price_per_sheet = room.price_per_sheet or 5000
             total_price = sheets_requested * price_per_sheet
+
 
         # Discount and GST calculation
         discount = int(request.POST.get('discount', 0))
@@ -226,17 +246,29 @@ def book_room(request):
         selected_room = None
         room_type = None
         price = None
-
+        available_sheets = 0
+        
         if selected_room_id:
             selected_room = Room.objects.get(id=selected_room_id)
             room_type = selected_room.room_type
             price = selected_room.price or selected_room.price_per_sheet
 
+            # Calculate available sheets dynamically
+            active_bookings = Booking.objects.filter(room=selected_room, status='ACTIVE')
+            booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
+            available_sheets = selected_room.sheet_count - booked_sheets
+            
+
+        else:
+            available_sheets = 0
+            
         return render(request, 'book_room.html', {
             'rooms': rooms,
             'selected_room': selected_room,
             'room_type': room_type,
             'price': price,
+            'error_sheets_requested': False,  # Default to no error
+            'available_sheets': available_sheets,
             
         })
 
@@ -483,25 +515,35 @@ def create_quotation(request):
 
         # Fetch the room and check availability
         room = get_object_or_404(Room, id=room_id)
-
         # Calculate available sheets based on active bookings
         active_bookings = Booking.objects.filter(room=room, status='ACTIVE')
         booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
         available_sheets = room.sheet_count - booked_sheets
 
+
         # If room type is not "Office", don't calculate based on sheets, just store the price
         if room.room_type != "Office":
             total_price = room.price  # Direct price without calculation based on sheets
         else:
+            # For "Office" type, calculate price based on sheets requested
+            
             if sheets_requested > available_sheets:
                 messages.error(request, "Not enough sheets available for the selected dates.")
-                return redirect('employee:book_room')
+                return render(request, 'create_quotation.html', {
+                    'rooms': Room.objects.all(),
+                    'selected_room': room,
+                    'room_type': room.room_type,
+                    'price': room.price or room.price_per_sheet,
+                    'error_sheets_requested': True,  # Pass error flag
+                    'available_sheets': available_sheets,  # Ensure this reflects the correct value
+                    'request_data': request.POST, 
+                })
 
             price_per_sheet = room.price_per_sheet or 5000
             total_price = sheets_requested * price_per_sheet
 
         # Discount and GST calculation
-        discount = int(request.POST.get('discount', 0))
+        discount = int(request.POST.get('discount', '0') or 0)
         discount_amount = (total_price * discount) / 100
         final_price = total_price - discount_amount
 
@@ -523,7 +565,7 @@ def create_quotation(request):
         )
 
         messages.success(request, f"Room booked successfully from {start_date} to {end_date}!")
-        return redirect('employee:quotation')
+        return redirect('employee:dashboard')
 
     else:
         rooms = Room.objects.all()
@@ -538,86 +580,26 @@ def create_quotation(request):
             room_type = selected_room.room_type
             price = selected_room.price or selected_room.price_per_sheet
 
-            # Calculate available sheets for the selected room
+            # Calculate available sheets dynamically
             active_bookings = Booking.objects.filter(room=selected_room, status='ACTIVE')
             booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
             available_sheets = selected_room.sheet_count - booked_sheets
 
+        else:
+            available_sheets = 0
+
         return render(request, 'create_quotation.html', {
-            'rooms': rooms,
-            'selected_room': selected_room,
-            'room_type': room_type,
-            'price': price,
-            'available_sheets': available_sheets,  # Pass available sheets to the template
-        })
+                'rooms': rooms,
+                'selected_room': selected_room,
+                'room_type': room_type,
+                'price': price,
+                'error_sheets_requested': False,
+                'available_sheets': available_sheets,
+            })
 
-    # if request.method == 'POST':
-    #     room_id = request.POST['room_id']
-    #     client_name = request.POST['client_name']
-    #     sheets_requested = int(request.POST['sheets_requested'])
-    #     booking_type = request.POST['booking_type']
-    #     start_date = datetime.strptime(request.POST['start_date'], '%Y-%m-%d').date()
 
-    #     # Determine the end date based on booking type
-    #     if booking_type == 'DAILY':
-    #         end_date = datetime.strptime(request.POST['end_date'], '%Y-%m-%d').date()
-    #     elif booking_type == 'MONTHLY':
-    #         end_date = start_date + timedelta(days=30)
-    #     elif booking_type == 'YEARLY':
-    #         end_date = start_date + timedelta(days=365)
 
-    #     # Fetch the room and check availability
-    #     room = get_object_or_404(Room, id=room_id)
-
-    #     # Calculate price based on sheets requested
-    #     existing_bookings = Booking.objects.filter(
-    #         room=room,
-    #         end_date__gte=start_date,  # Overlapping bookings
-    #         start_date__lte=end_date,
-    #     )
-
-    #     total_sheets_booked = sum([booking.sheets_booked for booking in existing_bookings])
-    #     available_sheets = room.sheet_count - total_sheets_booked
-
-    #     if sheets_requested > available_sheets:
-    #         messages.error(request, "Not enough sheets available for the selected dates.")
-    #         return redirect('employee:create_quotation')
-
-    #     price_per_sheet = room.price_per_sheet or 5000
-    #     total_price = sheets_requested * price_per_sheet
-
-    #     # Discount and GST calculation
-    #     discount = int(request.POST.get('discount', 0))
-    #     discount_amount = (total_price * discount) / 100
-    #     final_price = total_price - discount_amount
-
-    #     # Calculate GST
-    #     igst = (final_price * 9) / 100
-    #     sgst = (final_price * 9) / 100
-    #     total_price_with_gst = final_price + igst + sgst
-
-    #     # Create the quotation
-    #     Quotation.objects.create(
-    #         room=room,
-    #         client_name=client_name,
-    #         sheets_requested=sheets_requested,
-    #         start_date=start_date,
-    #         end_date=end_date,
-    #         booking_type=booking_type,
-    #         discount=discount,
-    #         total_price_with_gst=total_price_with_gst,  # Include GST in the final price
-    #     )
-
-    #     messages.success(request, f"Quotation created successfully for room: {room.name}!")
-    #     return redirect('employee:quotation')
-
-    # else:
-    #     room_id = request.GET.get('room_id')
-    #     room = get_object_or_404(Room, id=room_id)
-    #     return render(request, 'create_quotation.html', {
-    #         'room': room
-    #     })
-
+   
 # View for printing the quotation
 def print_quotation(request, quotation_id):
     quotation = get_object_or_404(Quotation, id=quotation_id)
