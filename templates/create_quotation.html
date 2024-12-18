@@ -2,12 +2,12 @@
 
 {% block title %}
 
-<title>Book a Room</title>
+<title>Create Quotation</title>
 
 {% endblock title %}
 {% block main %}
    
-    <h1>Book a Room</h1>
+    <h1>Create Quotation</h1>
 
     {% if messages %}
         <div class="messages">
@@ -37,7 +37,7 @@
 
             <div class="form-group">
                 <label for="client_name">Client Name:</label>
-                <input type="text" name="client_name" id="client_name" required>
+                <input type="text" name="client_name" id="client_name" value="{{ request.POST.client_name|default:'' }}" required>
             </div>
 
             <div class="form-group">
@@ -61,12 +61,12 @@
 
             <div class="form-group">
                 <label for="start_date">Start Date:</label>
-                <input type="date" name="start_date" id="start_date" required>
+                <input type="date" name="start_date" id="start_date" value="{{ request.POST.start_date|default:'' }}" required>
             </div>
-
+            
             <div class="form-group">
                 <label for="end_date">End Date:</label>
-                <input type="date" name="end_date" id="end_date">
+                <input type="date" name="end_date" id="end_date" value="{{ request.POST.end_date|default:'' }}">
             </div>
 
             <div class="form-group">
@@ -99,75 +99,82 @@
     </div>
 
     <script>
-const roomSelect = document.getElementById("room_id");
-const sheetsRequestedInput = document.getElementById("sheets_requested");
-const discountInput = document.getElementById("discount");
-const finalPriceInput = document.getElementById("final_price");
-const igstInput = document.getElementById("igst");
-const sgstInput = document.getElementById("sgst");
-const totalPriceWithGstInput = document.getElementById("total_price_with_gst");
+        const roomSelect = document.getElementById("room_id");
+        const sheetsRequestedInput = document.getElementById("sheets_requested");
+        const discountInput = document.getElementById("discount");
+        const finalPriceInput = document.getElementById("final_price");
+        const igstInput = document.getElementById("igst");
+        const sgstInput = document.getElementById("sgst");
+        const totalPriceWithGstInput = document.getElementById("total_price_with_gst");
+        
+        // Data passed from the server
+        const roomType = "{{ room_type|escapejs }}"; 
+        const roomPrice = parseFloat("{{ price|default:0|floatformat:2 }}");
+        let availableSheets = "{{ available_sheets|default:0 }}"; // Available sheets passed from the view
 
-const roomType = "{{ room_type|escapejs }}"; // Room type passed from the view
-const roomPrice = parseFloat("{{ price|default:0|floatformat:2 }}"); // Room price passed from the view
-let availableSheets = "{{ available_sheets|default:0 }}"; // Available sheets passed from the view
+                // Fetch available sheet count based on room selection
+            roomSelect.addEventListener("change", function() {
+            const selectedRoom = roomSelect.selectedOptions[0];
+            const sheetCount = selectedRoom.getAttribute("data-sheet-count");
 
-// Fetch available sheet count based on room selection
-roomSelect.addEventListener("change", function() {
-    const selectedRoom = roomSelect.selectedOptions[0];
-    const sheetCount = selectedRoom.getAttribute("data-sheet-count");
+            if (roomType !== "Office") {
+                // For non-office room types, directly use available sheets
+                sheetsRequestedInput.max = sheetCount; // Set the max value to the available sheet count
+                sheetsRequestedInput.value = sheetCount; // Set the default value to the sheet count
+            } else {
+                // If the room is "Office", update the available sheets logic
+                availableSheets = sheetCount; // Update available sheets for office type room
+            }
+            
+            updatePrice(); // Recalculate price whenever the room is changed
+        });
 
-    if (roomType !== "Office") {
-        // For non-office room types, directly use available sheets
-        sheetsRequestedInput.max = sheetCount; // Set the max value to the available sheet count
-        sheetsRequestedInput.value = sheetCount; // Set the default value to the sheet count
-    } else {
-        // If the room is "Office", update the available sheets logic
-        availableSheets = sheetCount; // Update available sheets for office type room
-    }
+
+        // Retain form data after submission
+        sheetsRequestedInput.value = "{{ request.POST.sheets_requested|default:'' }}";
+        discountInput.value = "{{ request.POST.discount|default:'' }}";
     
-    updatePrice(); // Recalculate price whenever the room is changed
-});
-
-// Update price calculation
-function updatePrice() {
-    const sheetsRequested = parseInt(sheetsRequestedInput.value) || 0;
-    const discount = parseInt(discountInput.value) || 0;
+        // Highlight the sheets_requested input if there's an error
+        if ("{{ error_sheets_requested }}" === "True") {
+            sheetsRequestedInput.style.border = "2px solid red";
+        }
     
-    let totalPrice = 0;
-
-    if (roomType !== "Office") {
-        // For non-office rooms, we are directly setting the sheet count as requested sheets
-        totalPrice = roomPrice; // For non-office rooms, no sheet-based calculation is needed
-    } else {
-        // Calculate price based on sheets requested for "Office" type
-        const pricePerSheet = roomPrice; // Default price per sheet
-        totalPrice = sheetsRequested * pricePerSheet;
-    }
-
-    // Apply discount
-    const discountAmount = (totalPrice * discount) / 100;
-    const finalPrice = totalPrice - discountAmount;
-
-    // Calculate GST
-    const igst = (finalPrice * 9) / 100;
-    const sgst = (finalPrice * 9) / 100;
-    const totalPriceWithGst = finalPrice + igst + sgst;
-
-    // Update the form fields
-    finalPriceInput.value = `₹${finalPrice.toFixed(2)}`;
-    igstInput.value = `₹${igst.toFixed(2)}`;
-    sgstInput.value = `₹${sgst.toFixed(2)}`;
-    totalPriceWithGstInput.value = `₹${totalPriceWithGst.toFixed(2)}`;
-}
-
-// Listen for changes on sheets_requested and discount inputs
-sheetsRequestedInput.addEventListener("input", updatePrice);
-discountInput.addEventListener("input", updatePrice);
-
-// Initial price calculation
-updatePrice();
-
+        // Update price dynamically
+        function updatePrice() {
+            const sheetsRequested = parseInt(sheetsRequestedInput.value) || 0;
+            const discount = parseInt(discountInput.value) || 0;
+    
+            let totalPrice = 0;
+    
+            if (roomType !== "Office") {
+                totalPrice = roomPrice; // Non-office rooms use a flat price
+            } else {
+                const pricePerSheet = roomPrice;
+                totalPrice = sheetsRequested * pricePerSheet;
+            }
+    
+            // Apply discount
+            const discountAmount = (totalPrice * discount) / 100;
+            const finalPrice = totalPrice - discountAmount;
+    
+            // Calculate GST
+            const igst = (finalPrice * 9) / 100;
+            const sgst = (finalPrice * 9) / 100;
+            const totalPriceWithGst = finalPrice + igst + sgst;
+    
+            // Update input fields
+            finalPriceInput.value = `₹${finalPrice.toFixed(2)}`;
+            igstInput.value = `₹${igst.toFixed(2)}`;
+            sgstInput.value = `₹${sgst.toFixed(2)}`;
+            totalPriceWithGstInput.value = `₹${totalPriceWithGst.toFixed(2)}`;
+        }
+    
+        // Attach event listeners to update price dynamically
+        sheetsRequestedInput.addEventListener("input", updatePrice);
+        discountInput.addEventListener("input", updatePrice);
+    
+        // Initial price calculation
+        updatePrice();
     </script>
-    
 </body>
 {% endblock main %}

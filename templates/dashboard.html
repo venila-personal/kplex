@@ -6,15 +6,15 @@
 {% block main %}
 <div class="cards">
     <div class="card">
-        <h2>Total Rooms</h2>
+        <h2>Total Office</h2>
         <p>{{ total_rooms }}</p>
     </div>
     <div class="card">
-        <h2>Total Available Sheets</h2>
-        <p>{{ total_available_sheets }}</p>
+        <h2>Total Available Office Sheets</h2>
+        <p>{{ available_office_rooms }}</p>
     </div>
     <div class="card">
-        <h2>Active Clients</h2>
+        <h2>Active Office Clients</h2>
         <p>{{ total_clients_active }}</p>
     </div>
     <div class="card">
@@ -29,6 +29,15 @@
 
 <!-- Room availability table -->
 <h1>Available Sheets</h1>
+{% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="{{ message.tags }}-message">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
 <table>
     <thead>
         <tr>
