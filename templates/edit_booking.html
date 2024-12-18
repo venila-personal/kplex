@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .form-container {
+            width: 50%;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .form-container h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-container label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .form-container input, .form-container select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Edit Booking</h1>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="client_name">Client Name</label>
+            <input type="text" id="client_name" name="client_name" value="{{ booking.client_name }}" required>
+
+            <label for="sheets_booked">Sheets Booked</label>
+            <input type="number" id="sheets_booked" name="sheets_booked" value="{{ booking.sheets_booked }}" min="1" max="{{ booking.room.sheet_count }}" required>
+
+            <label for="booking_type">Booking Type</label>
+            <select id="booking_type" name="booking_type" required>
+                <option value="DAILY" {% if booking.booking_type == 'DAILY' %}selected{% endif %}>Date Range</option>
+                <option value="MONTHLY" {% if booking.booking_type == 'MONTHLY' %}selected{% endif %}>Monthly</option>
+                <option value="YEARLY" {% if booking.booking_type == 'YEARLY' %}selected{% endif %}>Yearly</option>
+            </select>
+
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" value="{{ booking.start_date }}" required>
+
+            <label for="end_date">End Date</label>
+            <input type="date" id="end_date" name="end_date" value="{{ booking.end_date }}">
+
+            <label for="discount">Discount (%)</label>
+            <input type="number" id="discount" name="discount" value="{{ booking.discount }}" min="0" max="100" step="1" placeholder="Enter discount in %" required>
+
+            <label for="final_price">Final Price (₹)</label>
+            <input type="text" id="final_price" name="final_price" value="{{ booking.final_price }}" readonly>
+
+            <label for="igst">IGST (9%)</label>
+            <input type="text" id="igst" name="igst" value="{{ booking.final_price|floatformat:2 }}" readonly>
+
+            <label for="sgst">SGST (9%)</label>
+            <input type="text" id="sgst" name="sgst" value="{{ booking.final_price|floatformat:2 }}" readonly>
+
+            <label for="total_price_with_gst">Total Price (including GST)</label>
+            <input type="text" id="total_price_with_gst" name="total_price_with_gst" value="{{ booking.final_price|floatformat:2 }}" readonly>
+
+            <button type="submit">Update Booking</button>
+        </form>
+    </div>
+
+    <script>
+        const sheetsBookedInput = document.getElementById("sheets_booked");
+        const discountInput = document.getElementById("discount");
+        const finalPriceInput = document.getElementById("final_price");
+        const igstInput = document.getElementById("igst");
+        const sgstInput = document.getElementById("sgst");
+        const totalPriceWithGstInput = document.getElementById("total_price_with_gst");
+
+        function updatePrice() {
+            const sheetsBooked = parseInt(sheetsBookedInput.value) || 0;
+            const discount = parseInt(discountInput.value) || 0;
+            const pricePerSheet = 5000; // Assuming price per sheet is ₹5000
+
+            let totalPrice = sheetsBooked * pricePerSheet;
+            let discountAmount = (totalPrice * discount) / 100;
+            let finalPrice = totalPrice - discountAmount;
+
+            let igst = (finalPrice * 9) / 100;
+            let sgst = (finalPrice * 9) / 100;
+            let totalPriceWithGst = finalPrice + igst + sgst;
+
+            finalPriceInput.value = `₹${finalPrice.toFixed(2)}`;
+            igstInput.value = `₹${igst.toFixed(2)}`;
+            sgstInput.value = `₹${sgst.toFixed(2)}`;
+            totalPriceWithGstInput.value = `₹${totalPriceWithGst.toFixed(2)}`;
+        }
+
+        sheetsBookedInput.addEventListener("input", updatePrice);
+        discountInput.addEventListener("input", updatePrice);
+
+        updatePrice(); // Initial price calculation
+    </script>
+</body>
+</html>

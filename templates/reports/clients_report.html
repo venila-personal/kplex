@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+
+<title>Clients Report</title>
+
+{% endblock title %}
+
+{% block main %}
+   
+    <h1>Clients Report</h1>
+
+   
+
+    <table>
+        <thead>
+            <tr>
+                <th>Client Name</th>
+                <th>Room Name</th>
+                <th>Booking Type</th>
+                <th>Sheets Booked</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.client_name }}</td>
+                <td>{{ booking.room.name }}</td>
+                <td>{{ booking.booking_type }}</td>
+                <td>{{ booking.sheets_booked }}</td>
+                <td>{{ booking.status }}</td>
+                <td>{{ booking.start_date }}</td>
+                <td>{{ booking.end_date }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <form method="get" style="text-align: center; margin-bottom: 20px;width: fit-content;" action="{% url 'employee:clients_report' %}" style="text-align: center; margin-bottom: 20px;">
+        {% for key, value in request.GET.items %}
+            {% if key != 'export' %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+        <button type="submit" name="export" value="excel" style="
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;">
+            Export to Excel
+        </button>
+    </form>
+    {% include 'reports/pagination.html' %}
+    {% endblock main %}

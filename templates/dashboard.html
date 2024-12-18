@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Dashboard</title>
+{% endblock title %}
+{% block main %}
+<div class="cards">
+    <div class="card">
+        <h2>Total Rooms</h2>
+        <p>{{ total_rooms }}</p>
+    </div>
+    <div class="card">
+        <h2>Total Available Sheets</h2>
+        <p>{{ total_available_sheets }}</p>
+    </div>
+    <div class="card">
+        <h2>Active Clients</h2>
+        <p>{{ total_clients_active }}</p>
+    </div>
+    <div class="card">
+        <h2>Total Clients</h2>
+        <p>{{ total_clients }}</p>
+    </div>
+    <div class="card">
+        <h2>Pending Quotations</h2>
+        <p>{{ total_pending_quotations }}</p>
+    </div>
+</div>
+
+<!-- Room availability table -->
+<h1>Available Sheets</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Room Name</th>
+            <th>Room Type</th>
+            <th>Total Sheets</th>
+            <th>Available Sheets</th>
+            <th>Booked Sheets</th>
+            <th>Action</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for room_info in rooms_with_availability %}
+        <tr>
+            <td>{{ room_info.room.name }}</td>
+            <td>{{ room_info.room.room_type }}</td>
+            <td>{{ room_info.room.sheet_count }}</td>
+            <td style="color: #45a049;">{{ room_info.available_sheets }}</td>
+            <td style="color: red;">
+                {% if room_info.booked_sheets > 0 %}
+                    <button class="test" style="color: red;" onclick="toggleDetails('{{ room_info.room.id }}')">
+                        {{ room_info.booked_sheets }} (Details)
+                    </button>
+                {% else %}
+                    0
+                {% endif %}
+            </td>
+            <td>
+                <form method="get" action="{% url 'employee:book_room' %}">
+                    <input type="hidden" name="room_id" value="{{ room_info.room.id }}">
+                    <button type="submit" class="test">Book</button>
+                </form>
+            </td>
+            <td>
+                <form method="get" action="{% url 'employee:create_quotation' %}">
+                    <input type="hidden" name="room_id" value="{{ room_info.room.id }}">
+                    <button type="submit" class="test">Create Quotation</button>
+                </form>
+            </td>
+           
+            
+        </tr>
+        <tr id="details-{{ room_info.room.id }}" class="child-table">
+            <td colspan="6">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Booked Sheets</th>
+                            <th>View Invoice</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in room_info.bookings %}
+                        {% if booking.status == "ACTIVE" %}
+                        <tr>
+                            <td>{{ booking.client_name }}</td>
+                            <td>{{ booking.sheets_booked }}</td>
+                            <td>
+                                <a href="{% url 'employee:generate_invoice' booking.id %}">View Invoice</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'employee:edit_booking' booking.id %}" class="test">Edit Booking</a>
+                                <a href="{% url 'employee:cancel_booking' booking.id %}" class="test" 
+                                    onclick="return confirm('Are you sure you want to cancel this booking?');">Cancel Booking</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">No active bookings for this room.</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        
+        
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock main %}

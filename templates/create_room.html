@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<h1>Create a New Room</h1>
+
+{% if messages %}
+    <div class="messages">
+        <ul>
+            {% for message in messages %}
+                <li style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="container">
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="name">Room Name:</label>
+            <input type="text" name="name" id="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="room_type">Room Type:</label>
+            <select name="room_type" id="room_type" required onchange="toggleFields()">
+                <option value="Meeting Room">Meeting Room</option>
+                <option value="Auditorium">Auditorium</option>
+                <option value="Office">Office</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="sheet_count">Number of Sheets:</label>
+            <input type="number" name="sheet_count" id="sheet_count"  min="1" required>
+        </div>
+
+        <!-- For Office Room -->
+        <div class="form-group" id="price-per-sheet-group">
+            <label for="price_per_sheet">Price per Sheet:</label>
+            <input type="number" name="price_per_sheet" id="price_per_sheet" step="0.01" min="0">
+        </div>
+
+        <!-- For Auditorium or Meeting Room -->
+        <div class="form-group" id="price-group" style="display: none;">
+            <label for="price">Total Price:</label>
+            <input type="number" name="price" id="price" step="0.01" min="0">
+        </div>
+
+        <button type="submit">Create Room</button>
+    </form>
+</div>
+
+<script>
+    function toggleFields() {
+        const roomType = document.getElementById("room_type").value;
+        const pricePerSheetGroup = document.getElementById("price-per-sheet-group");
+        const priceGroup = document.getElementById("price-group");
+
+        if (roomType === "Office") {
+            pricePerSheetGroup.style.display = "block";
+            priceGroup.style.display = "none";
+        } else {
+            pricePerSheetGroup.style.display = "none";
+            priceGroup.style.display = "block";
+        }
+    }
+
+    // Initialize fields visibility on page load
+    toggleFields();
+</script>
+
+{% endblock main %}

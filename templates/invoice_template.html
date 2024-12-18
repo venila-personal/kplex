@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .invoice-header h1 {
+            margin: 0;
+        }
+        .invoice-header p {
+            margin: 5px 0;
+        }
+        .invoice-details {
+            margin-top: 20px;
+        }
+        .invoice-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .invoice-details th, .invoice-details td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-details th {
+            background-color: #f4f4f4;
+        }
+        .total {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+   
+    <div class="invoice-header">
+        <h1>Invoice</h1> 
+        <button onclick="window.print()">Print Invoice</button>
+        <p>From Date: {{ start_date }}</p>
+        <p>To Date: {{ end_date }}</p>
+        <p>Invoice Date: {{ current_date }}</p>
+    </div>
+
+    <div class="invoice-details">
+        <h2>Client Details</h2>
+        <table>
+            <tr>
+                <th>Client Name</th>
+                <td>{{ client_name }}</td>
+            </tr>
+            <tr>
+                <th>Room Name</th>
+                <td>{{ room_name }}</td>
+            </tr>
+            <tr>
+                <th>Room Type</th>
+                <td>{{ room_type }}</td>
+            </tr>
+            <tr>
+                <th>Sheets Booked</th>
+                <td>{{ sheets_booked }}</td>
+            </tr>
+            <tr>
+                <th>Price per Sheet</th>
+                <td>₹{{ price_per_sheet }}</td>
+            </tr>
+            <tr>
+                <th>Total Price</th>
+                <td>₹{{ total_price }}</td>
+            </tr>
+            <tr>
+                <th>Discount (%)</th>
+                <td>{{ discount }}%</td>
+            </tr>
+            <tr>
+                <th>Sub Total</th>
+                <td>₹{{ final_cost }}</td>
+            </tr>
+            <tr>
+                <td>IGST (9%)</td>
+                <td>{{ igst }}</td>
+            </tr>
+            <tr>
+                <td>SGST (9%)</td>
+                <td>{{ sgst }}</td>
+            </tr>
+            <tr>
+                <td><strong>Final Total (including GST)</strong></td>
+                <td><strong>{{ total_price_with_gst }}</strong></td>
+            </tr>
+           
+        </table>
+    </div>
+
+
+</body>
+</html>
