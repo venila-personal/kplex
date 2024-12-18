@@ -29,6 +29,15 @@
 
 <!-- Room availability table -->
 <h1>Available Sheets</h1>
+{% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="{{ message.tags }}-message">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
 <table>
     <thead>
         <tr>
