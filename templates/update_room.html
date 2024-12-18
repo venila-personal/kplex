@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<h1>Update Room: {{ room.name }}</h1>
+{% if messages %}
+    <div class="messages">
+        <ul>
+            {% for message in messages %}
+                <li style="color: {% if message.tags == 'error' %}red{% else %}green{% endif %};">
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+<div class="container">
+<form method="post">
+    {% csrf_token %}
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{ room.name }}" required><br><br>
+
+    <label for="room_type">Room Type:</label>
+    <select id="room_type" name="room_type">
+        <option value="Meeting Room" {% if room.room_type == "Meeting Room" %}selected{% endif %}>Meeting Room</option>
+        <option value="Auditorium" {% if room.room_type == "Auditorium" %}selected{% endif %}>Auditorium</option>
+        <option value="Office" {% if room.room_type == "Office" %}selected{% endif %}>Office</option>
+    </select><br><br>
+
+    <label for="sheet_count">Total Sheets:</label>
+    <input type="number" id="sheet_count" name="sheet_count" value="{{ room.sheet_count }}" required><br><br>
+
+    <label for="price_per_sheet">Price Per Sheet:</label>
+    <input type="number" step="0.01" id="price_per_sheet" name="price_per_sheet" value="{{ room.price_per_sheet }}"><br><br>
+
+    <label for="price">Room Price:</label>
+    <input type="number" step="0.01" id="price" name="price" value="{{ room.price }}" default="0"><br><br>
+
+    <label for="amenities">Amenities:</label><br>
+    <textarea id="amenities" name="amenities" rows="4" cols="50">{{ room.amenities }}</textarea><br><br>
+
+    <button type="submit" class="btn">Update</button>
+    <a href="{% url 'employee:dashboard' %}" class="btn">Cancel</a>
+</form>
+</div>
+{% endblock %}

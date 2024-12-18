@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Update Quotation</title>
+{% endblock %}
+
+{% block main %}
+<h1>Update Quotation</h1>
+<form method="POST">
+    {% csrf_token %}
+    
+    <label for="room_id">Room:</label>
+    <select name="room_id" required>
+        {% for room in rooms %}
+            <option value="{{ room.id }}" {% if room.id == quotation.room.id %}selected{% endif %}>
+                {{ room.name }} ({{ room.room_type }})
+            </option>
+        {% endfor %}
+    </select>
+    
+    <label for="client_name">Client Name:</label>
+    <input type="text" name="client_name" value="{{ quotation.client_name }}" required>
+    
+    <label for="sheets_requested">Sheets Requested:</label>
+    <input type="number" name="sheets_requested" value="{{ quotation.sheets_requested }}" required>
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" value="{{ quotation.start_date }}" required>
+
+    <label for="end_date">End Date:</label>
+    <input type="date" name="end_date" value="{{ quotation.end_date }}">
+
+    <label for="discount">Discount (%):</label>
+    <input type="number" name="discount" value="{{ quotation.discount }}" min="0" max="100">
+
+    <button type="submit">Update Quotation</button>
+</form>
+{% endblock %}

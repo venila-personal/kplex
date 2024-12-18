@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    {% block title %}
+        
+    {% endblock title %}
+        
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        /* Navbar styles */
+        .navbar {
+            background-color: #333;
+            display: flex;
+            justify-content: space-between; /* Space between left and right links */
+            padding: 10px 20px;
+        }
+
+        /* Left navigation links */
+        .navbar-left {
+            display: flex;
+        }
+
+        /* Right navigation links */
+        .navbar-right {
+            display: flex;
+        }
+
+        /* General link styles */
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            margin-right: 10px;
+        }
+
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .test{
+           
+            /* text-decoration: none; */
+            padding: 8px 15px;
+            margin-right: 10px;
+            background-color: #20be1b8a;
+            color: black;
+        }
+        /* Table styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+        }
+
+        table td a {
+            color: blue;
+            text-decoration: underline;
+        }
+
+        .child-table {
+            display: none;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .child-table td {
+            border-top: none;
+        }
+
+        .child-table th {
+            background-color: #4CAF50; /* Light blue background */
+        }
+
+        .accordion-btn {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
+        .container {
+            width: 50%;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="number"] {
+            width: calc(100% - 20px);
+        }
+        textarea {
+            width: calc(100% - 20px);
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .success-message {
+            color: green;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .messages ul {
+            padding-left: 0;
+            list-style-type: none;
+        }
+        .messages li {
+            font-size: 14px;
+            padding: 10px;
+            margin: 5px 0;
+            text-align: center;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        thead th {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+        tbody td {
+            text-align: center;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination a, .pagination span {
+            margin: 0 5px;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            color: #333;
+            border-radius: 4px;
+        }
+        .pagination a:hover {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .pagination .active {
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+        }
+        /* Dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown button */
+.dropbtn {
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #333;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+/* Dropdown content links */
+.dropdown-content a {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+/* Hover over dropdown button */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Hover over dropdown links */
+.dropdown-content a:hover {
+    background-color: #ddd;
+    color: black;
+}
+.cards {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.card {
+    flex: 1;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card h2 {
+    margin-bottom: 10px;
+    font-size: 1.0em;
+}
+
+.card p {
+    font-size: 1em;
+    margin: 0;
+    color: red;
+    margin-bottom: 10px;
+}
+
+</style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <!-- Navigation Bar -->
+<div class="navbar">
+    <div class="navbar-left">
+         <!-- Dashboard -->
+         <div class="dropdown">
+            <a href="{% url 'employee:dashboard' %}" class="dropbtn">Dashboard</a>
+        
+        </div>
+
+        <!-- Room Dropdown -->
+        <div class="dropdown">
+            <a href="{% url 'employee:room' %}" class="dropbtn">Room</a>
+            
+        </div>
+
+        
+
+        <!-- Enquiry Dropdown -->
+        <div class="dropdown">
+            <a href="{% url 'employee:quotation' %}" class="dropbtn">Quotations</a>
+           
+        </div>
+
+        <!-- Report Dropdown -->
+        <div class="dropdown">
+            <a href="#" class="dropbtn">Report</a>
+            <div class="dropdown-content">
+                <a href="{% url 'employee:clients_report' %}">Clients Report</a>
+                <a href="{% url 'employee:rooms_report' %}">Rooms Report</a>
+                <a href="{% url 'employee:available_rooms_report' %}">Available Rooms Report</a>
+                <a href="{% url 'employee:quotation_report' %}">Details</a>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <!-- Navbar Right -->
+    <!-- <div class="navbar-right">
+        <a class="test" href="{% url 'employee:book_room' %}">Book Room</a>
+    </div> -->
+</div>
+
+  
+  {% block main %}
+    
+  {% endblock main %}
+    
+    <script>
+        function toggleDetails(roomId) {
+            const details = document.getElementById(`details-${roomId}`);
+            // Toggle the display of the child table
+            details.style.display = details.style.display === 'none' || details.style.display === '' ? 'table-row' : 'none';
+        }
+    </script>
+
+    
+    {% block script %}
+        
+    {% endblock script %}
+        
+</body>
+</html>
