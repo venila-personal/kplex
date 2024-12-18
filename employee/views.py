@@ -29,12 +29,19 @@ def dashboard(request):
 
     # Fetch all rooms
     rooms = Room.objects.all()
+    total_office=Room.objects.filter(room_type='Office')
+    # Fetch only rooms with room_type 'Office'
+    office_rooms = Room.objects.filter(room_type='Office')
+    total_office_rooms = office_rooms.count()
 
-    total_rooms = rooms.count()
+    total_rooms = total_office.count()
     total_available_sheets = 0
-    total_clients_active = Booking.objects.filter(status='ACTIVE').values('client_name').distinct().count()
+    total_clients_active = Booking.objects.filter(status='ACTIVE', room__room_type='Office').values('client_name').distinct().count()
     total_clients = Booking.objects.values('client_name').distinct().count()
     total_pending_quotations = Quotation.objects.filter(status='Pending').count()
+
+    # Variable to hold total available sheets for office rooms
+    available_office_rooms = 0
 
     for room in rooms:
         active_bookings = Booking.objects.filter(room=room, status='ACTIVE')
@@ -43,6 +50,10 @@ def dashboard(request):
         booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
         available_sheets = room.sheet_count - booked_sheets
         total_available_sheets += available_sheets
+
+        # If room is of type 'Office', add available sheets to available_office_rooms
+        if room.room_type == 'Office':
+            available_office_rooms += available_sheets
 
         # Append room data to the list
         rooms_with_availability.append({
@@ -60,6 +71,7 @@ def dashboard(request):
         'total_clients_active': total_clients_active,
         'total_clients': total_clients,
         'total_pending_quotations': total_pending_quotations,
+        'available_office_rooms': available_office_rooms  # Total available sheets for office rooms
     }
 
     return render(request, 'dashboard.html', context)
@@ -245,6 +257,7 @@ def book_room(request):
             active_bookings = Booking.objects.filter(room=selected_room, status='ACTIVE')
             booked_sheets = active_bookings.aggregate(Sum('sheets_booked'))['sheets_booked__sum'] or 0
             available_sheets = selected_room.sheet_count - booked_sheets
+            
 
         else:
             available_sheets = 0
@@ -256,6 +269,7 @@ def book_room(request):
             'price': price,
             'error_sheets_requested': False,  # Default to no error
             'available_sheets': available_sheets,
+            
         })
 
 
