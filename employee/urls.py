@@ -18,7 +18,7 @@ urlpatterns = [
     path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     
     path('quotation/', views.quotation, name='quotation'),
-   path('create-quotation/', views.create_quotation, name='create_quotation'),
+    path('create-quotation/', views.create_quotation, name='create_quotation'),
     path('print-quotation/<int:quotation_id>/', views.print_quotation, name='print_quotation'),
     path('update_quotation/<int:id>/', views.update_quotation, name='update_quotation'),
     path('delete_quotation/<int:id>/', views.delete_quotation, name='delete_quotation'),
@@ -27,6 +27,13 @@ urlpatterns = [
     path('rooms/', views.rooms_report, name='rooms_report'),
     path('available_rooms/', views.available_rooms_report, name='available_rooms_report'),
     path('quotation_report/', views.quotation_report, name='quotation_report'),
+    path('enquiry_report/', views.enquiry_report, name='enquiry_report'),
+    
+    
+    path('enquiry/', views.enquiry, name='enquiry'),
+    path('create-enquiry/', views.create_enquiry, name='create_enquiry'),
+    path('update_enquiry/<int:id>/', views.update_enquiry, name='update_enquiry'),
+    path('delete_enquiry/<int:id>/', views.delete_enquiry, name='delete_enquiry'),
        
 ]
 

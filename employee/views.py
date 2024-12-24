@@ -1,6 +1,7 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404 ,redirect
 from decimal import Decimal
-from .models import Quotation, Room, Booking
+from .models import Quotation, Room, Booking,Enquiry
 from django.http import JsonResponse
 from django.contrib import messages
 from datetime import datetime, timedelta ,date
@@ -476,7 +477,73 @@ def available_rooms_report(request):
 
     return render(request, 'reports/available_rooms_report.html', {'page_obj': page_obj})
 
+def enquiry_report(request):
+    
+    export = request.GET.get('export')  # Check if export is requested
 
+    # Fetch enquiries with status "Pending"
+    enquiries = Enquiry.objects.all()
+    # If export to Excel is requested
+    if export == 'excel':
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=enquiry_report.xlsx'
+
+        # Create a new Excel workbook
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Enquiry Report"
+
+        # Add headers
+        headers = ["Enquiry ID", "Client Name", "Employee Name", "Room Type", "Sheets Requested", 
+                   "From Date", "To Date", "Referenced By", "Status", "Remarks", "Created At", "Offer Price"]
+        ws.append(headers)
+
+        # Add enquiry data
+        for enquiry in enquiries:
+            # Convert datetime fields to naive (timezone-less) datetime using make_naive, if applicable
+            created_at = enquiry.created_at
+            from_date = enquiry.from_date
+            to_date = enquiry.to_date
+
+            # Ensure that the datetime objects are naive
+            if isinstance(created_at, datetime) and created_at.tzinfo is not None:
+                created_at = make_naive(created_at)
+            if isinstance(from_date, datetime) and from_date.tzinfo is not None:
+                from_date = make_naive(from_date)
+            if isinstance(to_date, datetime) and to_date.tzinfo is not None:
+                to_date = make_naive(to_date)
+
+            ws.append([
+                enquiry.id,
+                enquiry.client_name,
+                enquiry.employee_name,
+                enquiry.room_type,
+                enquiry.required_sheets,
+                from_date,
+                to_date,
+                enquiry.referenced_by,
+                enquiry.status,
+                enquiry.remarks,
+                created_at,
+                enquiry.offer_price,
+            ])
+
+        # Save the workbook to the response
+        wb.save(response)
+        return response
+
+    # Handle normal enquiry display with pagination
+    page_obj = paginate_queryset(request, enquiries, per_page=10)
+    context = {
+        'enquiries': page_obj.object_list,
+        'page_obj': page_obj
+    }
+    return render(request, 'reports/enquiry_report.html', context)
+
+    
+    
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from datetime import datetime, timedelta
@@ -657,3 +724,152 @@ def delete_quotation(request, id):
     quotation.delete()
     messages.success(request, "Quotation deleted successfully.")
     return redirect('employee:quotation')
+
+
+
+import openpyxl
+from django.http import HttpResponse
+from django.utils.timezone import make_naive
+from datetime import datetime
+
+def enquiry(request):
+    export = request.GET.get('export')  # Check if export is requested
+
+    # Fetch enquiries with status "Pending"
+    enquiries = Enquiry.objects.filter(status="Pending")
+
+    # If export to Excel is requested
+    if export == 'excel':
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=enquiry_report.xlsx'
+
+        # Create a new Excel workbook
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Enquiry Report"
+
+        # Add headers
+        headers = ["Enquiry ID", "Client Name", "Employee Name", "Room Type", "Sheets Requested", 
+                   "From Date", "To Date", "Referenced By", "Status", "Remarks", "Created At", "Offer Price"]
+        ws.append(headers)
+
+        # Add enquiry data
+        for enquiry in enquiries:
+            # Convert datetime fields to naive (timezone-less) datetime using make_naive, if applicable
+            created_at = enquiry.created_at
+            from_date = enquiry.from_date
+            to_date = enquiry.to_date
+
+            # Ensure that the datetime objects are naive
+            if isinstance(created_at, datetime) and created_at.tzinfo is not None:
+                created_at = make_naive(created_at)
+            if isinstance(from_date, datetime) and from_date.tzinfo is not None:
+                from_date = make_naive(from_date)
+            if isinstance(to_date, datetime) and to_date.tzinfo is not None:
+                to_date = make_naive(to_date)
+
+            ws.append([
+                enquiry.id,
+                enquiry.client_name,
+                enquiry.employee_name,
+                enquiry.room_type,
+                enquiry.required_sheets,
+                from_date,
+                to_date,
+                enquiry.referenced_by,
+                enquiry.status,
+                enquiry.remarks,
+                created_at,
+                enquiry.offer_price,
+            ])
+
+        # Save the workbook to the response
+        wb.save(response)
+        return response
+
+    # Handle normal enquiry display with pagination
+    page_obj = paginate_queryset(request, enquiries, per_page=10)
+    context = {
+        'enquiries': page_obj.object_list,
+        'page_obj': page_obj
+    }
+    return render(request, 'enquiry.html', context)
+
+
+
+
+def create_enquiry(request):
+    
+    if request.method == 'POST':
+        client_name = request.POST.get('client_name')
+        employee_name = request.POST.get('employee_name')
+        room_type = request.POST.get('room_type')
+        required_sheets = request.POST.get('required_sheets')
+        from_date = request.POST.get('from_date')
+        to_date = request.POST.get('to_date')
+        referenced_by = request.POST.get('referenced_by')
+        # status = request.POST.get('status', 'Pending')
+        remarks = request.POST.get('remarks', '')
+        offer_price = request.POST.get('offer_price')
+
+        try:
+            # Validate dates
+            if from_date > to_date:
+                raise ValidationError("From date must be before or equal to To date.")
+
+            # Create the enquiry
+            Enquiry.objects.create(
+                client_name=client_name,
+                employee_name=employee_name,
+                room_type=room_type,
+                required_sheets=required_sheets,
+                from_date=from_date,
+                to_date=to_date,
+                referenced_by=referenced_by,
+                # status=status,
+                remarks=remarks,
+                offer_price=offer_price,
+            )
+            messages.success(request, "Enquiry created successfully!")
+            return redirect('employee:enquiry')  # Replace with your desired redirect URL
+        except Exception as e:
+            messages.error(request, f"Error creating enquiry: {e}")
+
+    return render(request, 'create_enquiry.html')
+    
+def update_enquiry(request, id):
+    enquiry = get_object_or_404(Enquiry, id=id)
+
+    if request.method == 'POST':
+        # Update the enquiry with form data
+        enquiry.client_name = request.POST.get('client_name')
+        enquiry.employee_name = request.POST.get('employee_name')
+        enquiry.room_type = request.POST.get('room_type')
+        enquiry.required_sheets = request.POST.get('required_sheets')
+        enquiry.from_date = request.POST.get('from_date')
+        enquiry.to_date = request.POST.get('to_date')
+        enquiry.referenced_by = request.POST.get('referenced_by')
+        enquiry.status = request.POST.get('status')
+        enquiry.remarks = request.POST.get('remarks')
+        
+        # Validate and save
+        try:
+            enquiry.full_clean()  # Validate the data
+            enquiry.save()  # Save to the database
+            return redirect('employee:enquiry')  # Redirect to the list page
+        except ValidationError as e:
+            return render(request, 'enquiry.html', {'enquiry': enquiry, 'errors': e.message_dict})
+
+    
+    return render(request, 'update_enquiry.html', {'enquiry': enquiry})
+
+
+def delete_enquiry(request, id):
+    if request.method == 'POST':
+        enquiry = get_object_or_404(Enquiry, id=id)
+        enquiry.delete()
+        return JsonResponse({'success': True, 'message': 'Enquiry deleted successfully.'})
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
