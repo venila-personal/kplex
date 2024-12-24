@@ -288,6 +288,120 @@
     margin-bottom: 10px;
 }
 
+/* Responsive styles for different screen sizes */
+
+/* For devices with a max width of 768px (tablets and small devices) */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navbar a {
+        padding: 10px;
+        margin-right: 0;
+        width: 100%;
+        text-align: left;
+    }
+
+    table {
+        font-size: 14px; /* Smaller font for smaller devices */
+    }
+
+    .cards {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .card {
+        margin-bottom: 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    .container {
+        width: 90%; /* Adjust width for tablets */
+    }
+}
+
+/* For devices with a max width of 480px (mobile devices) */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .navbar {
+        padding: 10px;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto; /* Horizontal scrolling for large tables */
+        font-size: 12px; /* Even smaller font for mobile */
+    }
+
+    table th, table td {
+        padding: 6px; /* Reduce padding for smaller screens */
+    }
+
+    .cards {
+        flex-direction: column;
+    }
+
+    .card h2 {
+        font-size: 1em;
+    }
+
+    .card p {
+        font-size: 0.9em;
+    }
+
+    .container {
+        width: 100%; /* Full width for mobile */
+        padding: 10px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.2em;
+    }
+
+    .navbar a {
+        padding: 8px;
+        font-size: 14px;
+    }
+}
+
+/* For devices larger than 1024px (desktops) */
+@media (min-width: 1024px) {
+    .container {
+        width: 50%; /* Default width for larger screens */
+    }
+
+    table {
+        font-size: 16px;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    .cards {
+        gap: 20px;
+    }
+
+    .navbar {
+        justify-content: space-between; /* Ensure navbar is properly spaced */
+    }
+}
+
+
 </style>
 </head>
 <body>
@@ -300,6 +414,13 @@
             <a href="{% url 'employee:dashboard' %}" class="dropbtn">Dashboard</a>
         
         </div>
+
+          <!-- Room Dropdown -->
+          <div class="dropdown">
+            <a href="{% url 'employee:enquiry' %}" class="dropbtn">Enquiry</a>
+        </div>
+
+
 
         <!-- Room Dropdown -->
         <div class="dropdown">
@@ -319,6 +440,7 @@
         <div class="dropdown">
             <a href="#" class="dropbtn">Report</a>
             <div class="dropdown-content">
+                <a href="{% url 'employee:enquiry_report' %}">Enquiry Report</a>
                 <a href="{% url 'employee:clients_report' %}">Clients Report</a>
                 <a href="{% url 'employee:rooms_report' %}">Rooms Report</a>
                 <a href="{% url 'employee:available_rooms_report' %}">Available Rooms Report</a>

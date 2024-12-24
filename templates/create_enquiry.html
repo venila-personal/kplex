@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}
+
+<title>Create Enquiry</title>
+
+{% endblock title %}
+{% block main %}
+   
+    <h1>Create Enquiry</h1>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="{{ message.tags }}-message">
+                    {{ message }}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container">
+        <form id="enquiryForm" method="POST" action="">
+            {% csrf_token %}
+    
+            <label for="client_name">Client Name:</label>
+            <input type="text" id="client_name" name="client_name" value="{{ client_name|default:'' }}" required>
+    
+            <label for="employee_name">Employee Name:</label>
+            <input type="text" id="employee_name" name="employee_name" value="{{ employee_name|default:'' }}" required>
+    
+            <label for="room_type">Room Type:</label>
+            <select id="room_type" name="room_type" required>
+                <option value="Meeting Room">Meeting Room</option>
+                <option value="Auditorium">Auditorium</option>
+                <option value="Office">Office</option>
+            </select><br>
+    
+            <label for="required_sheets">Required Sheets:</label>
+            <input type="number" id="required_sheets" name="required_sheets" value="{{ required_sheets|default:'' }}" required>
+          
+            <label for="from_date">From Date:</label>
+            <input type="date" id="from_date" name="from_date" value="{{ from_date|default:'' }}" required>
+        
+       
+            <label for="to_date">To Date:</label><div id="dateError" class="error" style="display:none;color: red;">From date must be before or equal to To date.</div>
+            <input type="date" id="to_date" name="to_date" value="{{ to_date|default:'' }}" required>
+   
+
+            <label for="referenced_by">Referenced By:</label>
+            <input type="text" id="referenced_by" name="referenced_by" value="{{ referenced_by|default:'' }}" required>
+    
+            <!-- <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="Pending">Pending</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Convert">Convert</option>
+            </select><br> -->
+
+            <label for="offer_price">Offer Price(Per Sheat):</label>
+            <input type="number" name="offer_price" id="offer_price" step="0.01" min="0">
+    
+            <label for="remarks">Remarks:</label>
+            <textarea id="remarks" name="remarks">{{ remarks|default:'' }}</textarea>
+    
+            <button type="submit" id="submitBtn">Create Enquiry</button>
+        </form>
+    
+        
+    </div>
+
+    
+
+{% endblock main %}
+
+{% block script %}
+
+<script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const fromDateInput = document.getElementById('from_date');
+                const toDateInput = document.getElementById('to_date');
+                const dateErrorDiv = document.getElementById('dateError');
+                const form = document.getElementById('enquiryForm');
+                const submitBtn = document.getElementById('submitBtn');
+    
+                function validateDates() {
+                    const fromDate = new Date(fromDateInput.value);
+                    const toDate = new Date(toDateInput.value);
+    
+                    if (toDateInput.value && fromDateInput.value && fromDate > toDate) {
+                        dateErrorDiv.style.display = 'block';
+                        toDateInput.classList.add('error');
+                        submitBtn.disabled = true; // Disable form submission
+                    } else {
+                        dateErrorDiv.style.display = 'none';
+                        toDateInput.classList.remove('error');
+                        submitBtn.disabled = false; // Enable form submission
+                    }
+                }
+    
+                toDateInput.addEventListener('input', validateDates);
+                fromDateInput.addEventListener('input', validateDates);
+    
+                // Prevent form submission if there's an error
+                form.addEventListener('submit', (e) => {
+                    if (submitBtn.disabled) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>
+
+{% endblock script %}
+<script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const fromDateInput = document.getElementById('from_date');
+                const toDateInput = document.getElementById('to_date');
+                const dateErrorDiv = document.getElementById('dateError');
+                const form = document.getElementById('enquiryForm');
+                const submitBtn = document.getElementById('submitBtn');
+    
+                function validateDates() {
+                    const fromDate = new Date(fromDateInput.value);
+                    const toDate = new Date(toDateInput.value);
+    
+                    if (toDateInput.value && fromDateInput.value && fromDate > toDate) {
+                        dateErrorDiv.style.display = 'block';
+                        toDateInput.classList.add('error');
+                        submitBtn.disabled = true; // Disable form submission
+                    } else {
+                        dateErrorDiv.style.display = 'none';
+                        toDateInput.classList.remove('error');
+                        submitBtn.disabled = false; // Enable form submission
+                    }
+                }
+    
+                toDateInput.addEventListener('input', validateDates);
+                fromDateInput.addEventListener('input', validateDates);
+    
+                // Prevent form submission if there's an error
+                form.addEventListener('submit', (e) => {
+                    if (submitBtn.disabled) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Enquiry Report</title>
+{% endblock title %}
+{% block main %}
+
+<!-- Room availability table -->
+<h1>Enquiry Report</h1>
+
+
+<div class="navbar-left">
+
+    <a class="test"   data-bs-toggle="modal" data-bs-target="#AddEnquiryModal" href="{% url 'employee:create_enquiry' %}">Create Enquiry
+    </a>
+
+</div> 
+<table>
+    <thead>
+        <tr>
+            <th>Sr No</th>
+            <th>Client Name</th>
+            <th>Room Type</th>
+            <th>Sheets Requested</th>
+            <th>From Date</th>
+            <th>To Date</th>
+            <th>Referenced By</th>
+            <th>Created By</th>
+            <th>Created At</th>
+            <th>Remarks</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in enquiries %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ i.client_name }}</td>
+            <td>{{ i.room_type }}</td>
+            <td>{{ i.required_sheets }}</td>
+            <td>{{ i.from_date|date:'d-m-Y' }}</td>
+            <td>{{ i.to_date|date:'d-m-Y' }}</td>
+            <td>{{ i.referenced_by }}</td>
+            <td>{{ i.employee_name }}</td>
+            <td>{{ i.created_at|date:'d-m-Y' }}</td>
+            <td>{{ i.remarks }}</td>
+            <td>{{ i.status }}</td>
+            <td>
+                <div class="d-flex justify-content-center">
+                    <a href="{% url 'employee:update_enquiry' i.id %}" class="test">Update</a>
+                    <a href="{% url 'employee:delete_enquiry' i.id %}" class="test delete-enquiry">Delete</a>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<form method="get" style="text-align: center; margin-bottom: 20px;width: fit-content;" action="{% url 'employee:enquiry' %}" style="text-align: center; margin-bottom: 20px;">
+    {% for key, value in request.GET.items %}
+        {% if key != 'export' %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endif %}
+    {% endfor %}
+    <button type="submit" name="export" value="excel" style="
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;">
+        Export to Excel
+    </button>
+</form>
+
+{% include 'reports/pagination.html' %}
+{% endblock main %}
+
+{% block script %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteLinks = document.querySelectorAll('.delete-enquiry');
+    
+        deleteLinks.forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+    
+                const deleteUrl = this.href; 
+                const confirmDelete = confirm('Are you sure you want to delete this enquiry?');
+    
+                if (confirmDelete) {
+                    fetch(deleteUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCSRFToken(), 
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            // Remove the row from the table
+                            this.closest('tr').remove();
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the enquiry.');
+                    });
+                }
+            });
+        });
+    
+        // Helper function to get CSRF token
+        function getCSRFToken() {
+            const cookieValue = document.cookie.split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+            return cookieValue || '';
+        }
+    });
+    </script>
+
+{% endblock script %}
